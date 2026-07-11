@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AI文创·英歌舞非遗数字化传播</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #2C4A3E;
+            --primary-deep: #1E352B;
+            --bg-light: #F4F7F4;
+            --bg-soft: #EAEFEA;
+            --accent-green: #C1D8AC;
+            --accent-soft: #D2E3C8;
+            --text-muted: #5A7A6A;
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: var(--bg-light);
+            color: var(--primary-dark);
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .font-art {
+            font-family: 'ZCOOL XiaoWei', serif;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(193, 216, 172, 0.6);
+            box-shadow: 0 4px 16px rgba(44, 74, 62, 0.1);
+        }
+        
+        .glass-modal {
+            background: rgba(244, 247, 244, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(44, 74, 62, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-deep));
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover, .btn-primary:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 20px rgba(44, 74, 62, 0.3);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-soft));
+            color: var(--primary-deep);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-accent:hover, .btn-accent:active {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(193, 216, 172, 0.4);
+        }
+        
+        @keyframes breathing {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(193, 216, 172, 0.2);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(193, 216, 172, 0.4);
+                transform: scale(1.02);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .animate-breathing {
+            animation: breathing 4s ease-in-out infinite;
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .view-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: none;
+            z-index: 10;
+        }
+        
+        .view-container.active {
+            display: block;
+        }
+        
+        .view-enter {
+            animation: slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        .view-exit {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-20%);
+            }
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .dashboard-card {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .dashboard-card:active {
+            transform: scale(0.95);
+        }
+        
+        .product-bottle {
+            background: linear-gradient(135deg, #D2E3C8 0%, #C1D8AC 30%, #F4F7F4 70%, #EAEFEA 100%);
+        }
+        
+        .timeline-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .timeline-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 40px rgba(44, 74, 62, 0.15);
+        }
+        
+        .timeline-card.active {
+            transform: scale(1.05);
+            background: rgba(193, 216, 172, 0.3);
+            border-color: var(--accent-green);
+        }
+        
+        .face-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .face-card:hover {
+            transform: scale(1.08);
+            box-shadow: 0 15px 50px rgba(44, 74, 62, 0.2);
+        }
+        
+        .mask-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 74, 62, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        
+        .mask-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            transform: translateY(50px) scale(0.9);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .modal-content.active {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        
+        .loading-ring {
+            border: 3px solid rgba(193, 216, 172, 0.3);
+            border-top-color: var(--primary-dark);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'meihua': {
+                            'dark': '#2C4A3E',
+                            'deep': '#1E352B',
+                            'light': '#F4F7F4',
+                            'soft': '#EAEFEA',
+                            'accent': '#C1D8AC',
+                            'accent-soft': '#D2E3C8',
+                            'muted': '#5A7A6A'
+                        }
+                    },
+                    fontFamily: {
+                        'serif': ['Noto Serif SC', 'serif'],
+                        'art': ['ZCOOL XiaoWei', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-meihua-light">
+    <button id="back-button" class="back-button glass-card w-10 h-10 rounded-full flex items-center justify-center text-meihua-dark shadow-lg" onclick="goBack()">
+        <svg viewBox="0 0 24 24" class="w-5 h-5">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
+        </svg>
+    </button>
+
+    <nav style="position:fixed;top:0;left:0;width:100%;padding:12px 24px;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.85);backdrop-filter:blur(15px);border-bottom:1px solid rgba(193,216,172,0.4);z-index:100;">
+        <div style="font-family:'ZCOOL XiaoWei',serif;font-size:20px;color:#2C4A3E;font-weight:500;">山梅纪</div>
+        <div style="display:flex;gap:24px;">
+            <span style="font-size:14px;color:#5A7A6A;cursor:pointer;transition:color 0.3s;" onclick="switchView('dashboard')" onmouseover="this.style.color='#2C4A3E'" onmouseout="this.style.color='#5A7A6A'">首页</span>
+            <span style="font-size:14px;color:#5A7A6A;cursor:pointer;transition:color 0.3s;" onclick="switchView('origin')" onmouseover="this.style.color='#2C4A3E'" onmouseout="this.style.color='#5A7A6A'">梅乡源起</span>
+            <span style="font-size:14px;color:#5A7A6A;cursor:pointer;transition:color 0.3s;" onclick="switchView('craft')" onmouseover="this.style.color='#2C4A3E'" onmouseout="this.style.color='#5A7A6A'">匠心工艺</span>
+            <span style="font-size:14px;color:#5A7A6A;cursor:pointer;transition:color 0.3s;" onclick="switchView('aigc')" onmouseover="this.style.color='#2C4A3E'" onmouseout="this.style.color='#5A7A6A'">独家记忆</span>
+            <span style="font-size:14px;color:#5A7A6A;cursor:pointer;transition:color 0.3s;" onclick="switchView('product')" onmouseover="this.style.color='#2C4A3E'" onmouseout="this.style.color='#5A7A6A'">山梅好礼</span>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;">
+            <span style="font-size:14px;color:#5A7A6A;cursor:pointer;transition:color 0.3s;" onmouseover="this.style.color='#2C4A3E'" onmouseout="this.style.color='#5A7A6A'">登录</span>
+            <span style="font-size:14px;color:#fff;background:#2C4A3E;padding:7px 18px;border-radius:24px;cursor:pointer;transition:background 0.3s;" onmouseover="this.style.background='#1E352B'" onmouseout="this.style.background='#2C4A3E'">注册</span>
+        </div>
+    </nav>
+
+    <div id="view-dashboard" class="view-container active">
+        <div style="width:100%;height:100vh;background:linear-gradient(to bottom,#F4F7F4,#D2E3C8 60%,#C1D8AC 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;position:relative;overflow:hidden;">
+            <div class="absolute inset-0 opacity-10">
+                <svg viewBox="0 0 1000 1000" class="w-full h-full">
+                    <circle cx="100" cy="100" r="300" fill="#2C4A3E" />
+                    <circle cx="900" cy="900" r="350" fill="#2C4A3E" />
+                    <path d="M0,500 Q250,400 500,500 T1000,500" stroke="#2C4A3E" stroke-width="3" fill="none" />
+                    <path d="M0,600 Q300,550 600,600 T1000,600" stroke="#2C4A3E" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+
+            <div class="relative z-10 mb-6">
+                <div class="w-40 h-72 relative">
+                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=elegant%20Chinese%20green%20plum%20wine%20bottle%20with%20traditional%20opera%20mask%20label%2C%20deep%20green%20and%20gold%20packaging%2C%20premium%20product%20photography%2C%20soft%20lighting%2C%20transparent%20background&image_size=portrait_4_3" alt="山梅纪青梅酒" class="w-full h-full object-contain animate-float" style="mask-image: linear-gradient(to bottom, transparent 5%, black 20%, black 80%, transparent 95%), linear-gradient(to right, transparent 8%, black 20%, black 80%, transparent 92%); -webkit-mask-image: linear-gradient(to bottom, transparent 5%, black 20%, black 80%, transparent 95%), linear-gradient(to right, transparent 8%, black 20%, black 80%, transparent 92%); mask-composite: add; -webkit-mask-composite: source-over;">
+                </div>
+            </div>
+
+            <div class="relative z-10 text-center">
+                <h1 style="font-family:'ZCOOL XiaoWei',serif;font-size:36px;color:#2C4A3E;margin:0 0 8px 0;font-weight:600;">山梅纪</h1>
+                <p style="font-size:15px;color:#2C4A3E;margin:0 0 8px 0;font-weight:400;">梅香满堂 · 非遗贺礼</p>
+                <p style="font-size:12px;color:#5A7A6A;margin:0;line-height:1.6;">以AI数字文创为桥梁 · 活化本土非遗文化</p>
+            </div>
+
+            <div class="relative z-10 mt-8 flex gap-6">
+                <div class="text-center">
+                    <div class="w-12 h-12 rounded-full bg-meihua-accent/30 flex items-center justify-center mx-auto mb-2">
+                        <svg viewBox="0 0 24 24" class="w-6 h-6 text-meihua-dark">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <p class="text-meihua-muted text-[10px]">非遗传承</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 rounded-full bg-meihua-accent/30 flex items-center justify-center mx-auto mb-2">
+                        <svg viewBox="0 0 24 24" class="w-6 h-6 text-meihua-dark">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93z" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <p class="text-meihua-muted text-[10px]">匠心工艺</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 rounded-full bg-meihua-accent/30 flex items-center justify-center mx-auto mb-2">
+                        <svg viewBox="0 0 24 24" class="w-6 h-6 text-meihua-dark">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <p class="text-meihua-muted text-[10px]">AI共创</p>
+                </div>
+            </div>
+
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+                <svg viewBox="0 0 24 24" class="w-6 h-6 text-meihua-accent">
+                    <path d="M7 10l5 5 5-5z" fill="currentColor" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-origin" class="view-container bg-meihua-light">
+        <div class="relative min-h-screen flex flex-col items-center pt-24 pb-16 px-4">
+            <div class="absolute inset-0 opacity-40">
+                <svg viewBox="0 0 1000 1000" class="w-full h-full">
+                    <circle cx="100" cy="100" r="200" fill="rgba(193,216,172,0.08)" />
+                    <circle cx="900" cy="900" r="250" fill="rgba(193,216,172,0.08)" />
+                    <path d="M0,500 Q250,400 500,500 T1000,500" stroke="rgba(44,74,62,0.08)" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+
+            <div class="relative z-10 w-full max-w-md">
+                <div class="text-center mb-10">
+                    <span class="inline-block text-meihua-accent text-xs tracking-widest mb-2">ORIGIN</span>
+                    <h2 class="font-art text-3xl text-meihua-dark">梅乡源起</h2>
+                    <p class="text-meihua-deep text-base font-light mt-2">得天独厚的青梅之乡</p>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 mb-6">
+                    <div class="relative mb-6 overflow-hidden rounded-xl h-40">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=aerial%20view%20of%20national%20level%20modern%20agriculture%20green%20plum%20industrial%20park%20entrance%20gate%2C%20large%20green%20Chinese%20characters%20%22%E5%9B%BD%E5%AE%B6%E7%BA%A7%E7%8E%B0%E4%BB%A3%E5%86%9C%E4%B8%9A%28%E9%9D%92%E6%A2%85%29%E4%BA%A7%E4%B8%9A%E5%9B%AD%22%20on%20top%20of%20gate%2C%20green%20logo%20with%20plum%20blossom%20emblem%20on%20right%20tower%2C%20vertical%20red%20Chinese%20text%20%22%E4%B8%AD%E5%9B%BD%E9%9D%92%E6%A2%85%E4%B9%8B%E4%B9%A1%22%2C%20grey%20stone%20sign%20on%20left%20with%20gold%20text%20%22%E6%8F%BA%E9%98%B3%E4%B8%AD%E5%85%83%E7%8E%B0%E4%BB%A3%E5%86%9C%E4%B8%9A%E4%BA%A7%E4%B8%9A%E5%9B%AD%E8%82%A1%E4%BB%BD%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8%22%2C%20mountain%20hillside%20background%2C%20blue%20industrial%20buildings%2C%20excavator%20construction%2C%20wide%20concrete%20road%2C%20sunny%20day%2C%20photorealistic%2C%20drone%20shot&image_size=landscape_16_9" alt="国家级现代农业(青梅)产业园" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-meihua-dark/50 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-2 left-2 text-white text-xs">国家级现代农业(青梅)产业园</div>
+                    </div>
+                    
+                    <h3 class="font-art text-xl text-meihua-dark mb-3">揭阳中元现代农业产业园</h3>
+                    <p class="text-meihua-muted text-sm leading-relaxed mb-6">
+                        坐落于中国青梅特产之乡——广东普宁，依托得天独厚的自然环境与万亩生态种植基地，致力于打造高品质青梅产业链，承载乡村振兴的重要使命。
+                    </p>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="text-center p-3 bg-meihua-accent/10 rounded-xl">
+                            <p class="font-art text-xl text-meihua-dark">万亩</p>
+                            <p class="text-meihua-muted text-[10px]">青梅种植基地</p>
+                        </div>
+                        <div class="text-center p-3 bg-meihua-accent/10 rounded-xl">
+                            <p class="font-art text-xl text-meihua-dark">生态</p>
+                            <p class="text-meihua-muted text-[10px]">高品质农产</p>
+                        </div>
+                        <div class="text-center p-3 bg-meihua-accent/10 rounded-xl">
+                            <p class="font-art text-xl text-meihua-dark">振兴</p>
+                            <p class="text-meihua-muted text-[10px]">乡村使命</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-5">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-full bg-meihua-accent/20 flex items-center justify-center shrink-0">
+                            <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93z" fill="currentColor" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-art text-base text-meihua-dark mb-1">传承与创新</h4>
+                            <p class="text-meihua-muted text-xs leading-relaxed">
+                                融合千年古法酿造技艺与现代数字化技术，让传统青梅产业焕发新生。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 glass-card rounded-xl p-4 cursor-pointer hover:shadow-lg transition-shadow" onclick="switchView('park-detail')">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-meihua-muted text-xs">了解更多</p>
+                            <p class="font-art text-meihua-dark">产地故事</p>
+                        </div>
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-accent">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-park-detail" class="view-container bg-meihua-light">
+        <div class="relative min-h-screen flex flex-col items-center pt-24 pb-16 px-4">
+            <div class="absolute inset-0 opacity-30">
+                <div class="absolute top-10 left-5 w-48 h-48 rounded-full bg-meihua-accent/30 blur-3xl"></div>
+                <div class="absolute bottom-20 right-0 w-56 h-56 rounded-full bg-meihua-secondary/30 blur-3xl"></div>
+            </div>
+
+            <div class="relative z-10 w-full max-w-md">
+                <div class="text-center mb-8">
+                    <span class="inline-block text-meihua-accent text-xs tracking-widest mb-2">PARK STORY</span>
+                    <h2 class="font-art text-3xl text-meihua-dark">产地故事</h2>
+                    <p class="text-meihua-deep text-base font-light mt-2">揭阳中元现代农业产业园</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-full bg-meihua-accent/20 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="currentColor" />
+                                </svg>
+                            </div>
+                            <h3 class="font-art text-lg text-meihua-dark">一、基础信息</h3>
+                        </div>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex">
+                                <span class="text-meihua-muted w-20 shrink-0">主体公司</span>
+                                <span class="text-meihua-deep flex-1">揭阳中元现代农业产业园股份有限公司</span>
+                            </div>
+                            <div class="flex">
+                                <span class="text-meihua-muted w-20 shrink-0">成立时间</span>
+                                <span class="text-meihua-deep flex-1">2018年2月13日，美江控股旗下企业</span>
+                            </div>
+                            <div class="flex">
+                                <span class="text-meihua-muted w-20 shrink-0">注册资本</span>
+                                <span class="text-meihua-deep flex-1">5000万元</span>
+                            </div>
+                            <div class="flex">
+                                <span class="text-meihua-muted w-20 shrink-0">法定代表人</span>
+                                <span class="text-meihua-deep flex-1">温金传</span>
+                            </div>
+                            <div class="flex">
+                                <span class="text-meihua-muted w-20 shrink-0">地址</span>
+                                <span class="text-meihua-deep flex-1">揭阳市普宁市马鞍山农场沙溪管区，G324国道东侧</span>
+                            </div>
+                            <div class="flex">
+                                <span class="text-meihua-muted w-20 shrink-0">定位</span>
+                                <span class="text-meihua-deep flex-1">广东省2018年省级重点农业项目——普宁青梅产业园唯一运营平台，由当地40余家青梅加工企业联合组建</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-full bg-meihua-accent/20 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor" />
+                                </svg>
+                            </div>
+                            <h3 class="font-art text-lg text-meihua-dark">区位交通</h3>
+                        </div>
+                        <p class="text-meihua-deep text-sm leading-relaxed">
+                            紧邻324国道，距揭阳潮汕机场约69km、揭阳火车站60km、神泉港36km，物流便利；覆盖马鞍山农场、高埔、大坪、后溪四大青梅主产区，全域规划41万亩，核心园区500亩。
+                        </p>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-full bg-meihua-accent/20 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                    <path d="M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.11 2.34 5.67C7.9 20.87 10 21.64 12 21.64s4.1-.77 5.66-2.33C19.22 17.75 20 15.64 20 13.64S19.22 9.56 17.66 8zM6 14c.01-2 .62-3.27 1.76-4.4L12 5.27l4.24 4.38C17.38 10.77 17.99 12 18 14H6z" fill="currentColor" />
+                                </svg>
+                            </div>
+                            <h3 class="font-art text-lg text-meihua-dark">二、核心产业：普宁青梅全产业链</h3>
+                        </div>
+                        <p class="text-meihua-deep text-sm leading-relaxed mb-4">
+                            园区主打青梅一二三产融合，布局「一心、三园、多基地」模式，五大产业集群：
+                        </p>
+
+                        <div class="space-y-4">
+                            <div class="p-3 bg-meihua-accent/10 rounded-xl">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-6 h-6 rounded-full bg-meihua-dark text-white text-xs flex items-center justify-center font-medium">一</span>
+                                    <span class="font-art text-meihua-dark text-sm">一产：标准化青梅种植基地</span>
+                                </div>
+                                <p class="text-meihua-muted text-xs leading-relaxed pl-8">
+                                    全区青梅种植10万亩，占普宁青梅总面积63%；建设良种育苗基地，统一种苗、标准化种植，对接30万农户，建立保底收购、分红利益联结机制。
+                                </p>
+                            </div>
+
+                            <div class="p-3 bg-meihua-accent/10 rounded-xl">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-6 h-6 rounded-full bg-meihua-dark text-white text-xs flex items-center justify-center font-medium">二</span>
+                                    <span class="font-art text-meihua-dark text-sm">二产：青梅精深加工园区</span>
+                                </div>
+                                <p class="text-meihua-muted text-xs leading-relaxed pl-8">
+                                    配套现代化加工厂房、智能清洗/灌装生产线；开发青梅蜜饯、青梅汁、青梅酒、青梅保健品、青梅茶包等深加工产品，拥有食品加工专利、14项农产品加工软件著作权、600+注册商标。
+                                </p>
+                            </div>
+
+                            <div class="p-3 bg-meihua-accent/10 rounded-xl">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-6 h-6 rounded-full bg-meihua-dark text-white text-xs flex items-center justify-center font-medium">三</span>
+                                    <span class="font-art text-meihua-dark text-sm">三产配套板块</span>
+                                </div>
+                                <div class="text-meihua-muted text-xs leading-relaxed pl-8 space-y-1">
+                                    <p><span class="text-meihua-deep font-medium">科研：</span>与省青梅产业联盟共建实验室，研发保鲜、萃取工艺；</p>
+                                    <p><span class="text-meihua-deep font-medium">物流仓储：</span>大型冷链仓储、农产品集散中心；</p>
+                                    <p><span class="text-meihua-deep font-medium">文旅观光：</span>青梅观光采摘园、梅文化展示馆、餐饮民宿，发展乡村休闲旅游；</p>
+                                    <p><span class="text-meihua-deep font-medium">电商销售：</span>线上线下一体化品牌运营，统一渠道拓销。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-full bg-meihua-accent/20 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="currentColor" />
+                                </svg>
+                            </div>
+                            <h3 class="font-art text-lg text-meihua-dark">三、园区功能分区</h3>
+                        </div>
+                        <p class="text-meihua-deep text-sm mb-3">一心三园多基地</p>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="p-3 bg-meihua-accent/10 rounded-xl text-center">
+                                <p class="font-art text-meihua-dark text-sm mb-1">一心</p>
+                                <p class="text-meihua-muted text-xs">综合服务中心<br><span class="text-meihua-muted/70">展示·办公·电商·检测·科研</span></p>
+                            </div>
+                            <div class="p-3 bg-meihua-accent/10 rounded-xl text-center">
+                                <p class="font-art text-meihua-dark text-sm mb-1">三园</p>
+                                <p class="text-meihua-muted text-xs">良种繁育园<br>精深加工园<br>青梅文旅观光园</p>
+                            </div>
+                        </div>
+                        <p class="text-meihua-muted text-xs leading-relaxed">
+                            <span class="text-meihua-deep font-medium">多基地：</span>连片标准化青梅种植示范基地、林下种养基地<br>
+                            <span class="text-meihua-deep font-medium">配套基础设施：</span>污水处理厂、冷链物流、给排水、供电、仓储、住宿餐饮配套齐全。
+                        </p>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-full bg-meihua-accent/20 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                    <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm1.65-2.65L11.5 12.2V7h1v4.79l1.65 1.65.7-.71z" fill="currentColor" />
+                                </svg>
+                            </div>
+                            <h3 class="font-art text-lg text-meihua-dark">四、企业资质与荣誉</h3>
+                        </div>
+                        <ul class="space-y-2 text-meihua-deep text-sm">
+                            <li class="flex items-start gap-2">
+                                <span class="text-meihua-accent mt-1">•</span>
+                                <span>省级重点现代农业产业园实施主体</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-meihua-accent mt-1">•</span>
+                                <span>2023全国乡村振兴优秀案例</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-meihua-accent mt-1">•</span>
+                                <span>拥有食品生产、种子繁育、旅游、网络货运等全链条经营资质</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-meihua-accent mt-1">•</span>
+                                <span>省级青梅产业创新联盟牵头单位，整合本地40余家青梅加工企业统一标准、统一品牌、统一外销</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-full bg-meihua-accent/20 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor" />
+                                </svg>
+                            </div>
+                            <h3 class="font-art text-lg text-meihua-dark">五、发展价值</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-meihua-accent/10 rounded-xl">
+                                <p class="text-meihua-deep text-sm font-medium mb-1">产业层面</p>
+                                <p class="text-meihua-muted text-xs leading-relaxed">
+                                    整合普宁零散青梅加工小微企业，解决同质化、低附加值问题，打造青梅区域公共品牌；
+                                </p>
+                            </div>
+                            <div class="p-3 bg-meihua-accent/10 rounded-xl">
+                                <p class="text-meihua-deep text-sm font-medium mb-1">乡村振兴</p>
+                                <p class="text-meihua-muted text-xs leading-relaxed">
+                                    直接带动30万梅农增收，土地流转、务工、产品收购多重收益；
+                                </p>
+                            </div>
+                            <div class="p-3 bg-meihua-accent/10 rounded-xl">
+                                <p class="text-meihua-deep text-sm font-medium mb-1">融合发展</p>
+                                <p class="text-meihua-muted text-xs leading-relaxed">
+                                    实现种植、加工、文旅、电商、科研一体化，打造粤东特色水果现代农业样板。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-full bg-meihua-accent/20 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="currentColor" />
+                                </svg>
+                            </div>
+                            <h3 class="font-art text-lg text-meihua-dark">六、联系方式</h3>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center gap-2">
+                                <span class="text-meihua-muted">联系电话：</span>
+                                <span class="text-meihua-deep">0663-2309966</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-meihua-muted shrink-0">用地规划：</span>
+                                <span class="text-meihua-deep">2022年获批商务金融用地22.55亩，用于园区综合配套建设</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-craft" class="view-container bg-meihua-light">
+        <div class="relative min-h-screen flex flex-col items-center pt-24 pb-16 px-4">
+            <div class="absolute inset-0 opacity-30">
+                <div class="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-meihua-accent/30 to-transparent"></div>
+                <div class="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-meihua-accent/20 to-transparent"></div>
+                <div class="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-meihua-accent/10 to-transparent"></div>
+            </div>
+
+            <div class="relative z-10 w-full max-w-md">
+                <div class="text-center mb-10">
+                    <span class="inline-block text-meihua-accent text-xs tracking-widest mb-2">CRAFTSMANSHIP</span>
+                    <h2 class="font-art text-3xl text-meihua-dark">匠心工艺</h2>
+                    <p class="text-meihua-deep text-base font-light mt-2">古法精酿与现代数字化的碰撞</p>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-meihua-accent via-meihua-accent-soft to-meihua-accent/30"></div>
+
+                    <div class="space-y-5">
+                        <div class="timeline-card glass-card rounded-xl p-4 pl-12 relative cursor-pointer" onclick="activateTimeline(0)">
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-meihua-light border-2 border-meihua-accent z-10"></div>
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <span class="text-meihua-accent text-xs font-medium">01</span>
+                                    <h3 class="font-art text-base text-meihua-dark mt-1">采摘</h3>
+                                    <p class="text-meihua-muted text-xs mt-1">严格筛选普宁优质青梅</p>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-meihua-accent/10 flex items-center justify-center">
+                                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-card glass-card rounded-xl p-4 pl-12 relative cursor-pointer" onclick="activateTimeline(1)">
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-meihua-light border-2 border-meihua-accent z-10"></div>
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <span class="text-meihua-accent text-xs font-medium">02</span>
+                                    <h3 class="font-art text-base text-meihua-dark mt-1">清洗</h3>
+                                    <p class="text-meihua-muted text-xs mt-1">全自动数字化设备清洗控制</p>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-meihua-accent/10 flex items-center justify-center">
+                                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                        <path d="M3 2v2h2V2H3zm4 4v2H5V6h2zm-4 4v2h2v-2H3zm8-8v2h2V2h-2zm-4 4v2H9V6h2zm-4 4v2h2v-2H5zm12-8v2h2V2h-2zm-4 4v2h2V6h-2zm-4 4v2h2v-2h-2z" fill="currentColor" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-card glass-card rounded-xl p-4 pl-12 relative cursor-pointer" onclick="activateTimeline(2)">
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-meihua-light border-2 border-meihua-accent z-10"></div>
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <span class="text-meihua-accent text-xs font-medium">03</span>
+                                    <h3 class="font-art text-base text-meihua-dark mt-1">发酵</h3>
+                                    <p class="text-meihua-muted text-xs mt-1">科学配方与老师傅经验的完美结合</p>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-meihua-accent/10 flex items-center justify-center">
+                                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9v-2h2v2zm0-4H9V6h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2z" fill="currentColor" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-card glass-card rounded-xl p-4 pl-12 relative cursor-pointer" onclick="activateTimeline(3)">
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-meihua-light border-2 border-meihua-accent z-10"></div>
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <span class="text-meihua-accent text-xs font-medium">04</span>
+                                    <h3 class="font-art text-base text-meihua-dark mt-1">智造</h3>
+                                    <p class="text-meihua-muted text-xs mt-1">智能灌装，严控食品安全</p>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-meihua-accent/10 flex items-center justify-center">
+                                    <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-dark">
+                                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="currentColor" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 glass-card rounded-xl p-4 cursor-pointer hover:shadow-lg transition-shadow" onclick="switchView('trace-game')">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-meihua-muted text-xs">全程溯源</p>
+                            <p class="font-art text-meihua-dark">青梅农场——可以真的收获青梅产品的小游戏</p>
+                        </div>
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 text-meihua-accent">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-trace-game" class="view-container overflow-hidden">
+        <div class="relative min-h-screen w-full">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#E8F0E5] via-[#DDE8D8] to-[#C8D8C0]"></div>
+            
+            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F0F5ED;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#DDE8D8;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="mountain1" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#A8C4A0;stop-opacity:0.4" />
+                        <stop offset="100%" style="stop-color:#8BA882;stop-opacity:0.3" />
+                    </linearGradient>
+                    <linearGradient id="mountain2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8BA882;stop-opacity:0.5" />
+                        <stop offset="100%" style="stop-color:#6B8862;stop-opacity:0.4" />
+                    </linearGradient>
+                    <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#9DB893;stop-opacity:0.6" />
+                        <stop offset="100%" style="stop-color:#7A9670;stop-opacity:0.7" />
+                    </linearGradient>
+                </defs>
+                
+                <rect width="1200" height="800" fill="url(#skyGrad)"/>
+                
+                <path d="M0,350 Q100,280 200,310 T400,260 T600,290 T800,250 T1000,280 T1200,260 L1200,500 L0,500 Z" fill="url(#mountain1)" opacity="0.5"/>
+                <path d="M0,420 Q150,350 300,380 T600,340 T900,370 T1200,350 L1200,550 L0,550 Z" fill="url(#mountain2)" opacity="0.6"/>
+                
+                <ellipse cx="600" cy="650" rx="800" ry="200" fill="url(#groundGrad)"/>
+                
+                <path d="M200,600 Q400,580 600,590 T1000,585" stroke="#6B8862" stroke-width="2" fill="none" opacity="0.3"/>
+                <path d="M150,630 Q350,610 550,620 T950,615" stroke="#5A7752" stroke-width="1.5" fill="none" opacity="0.25"/>
+            </svg>
+
+            <div class="absolute top-16 left-6 z-30">
+                <div class="flex items-center">
+                    <div class="relative w-16 h-16">
+                        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-[#5A8A5A] to-[#3D6B3D] border-4 border-[#8BAA8B] shadow-lg">
+                            <div class="absolute inset-1 rounded-full border border-[#A8C4A0]/50"></div>
+                        </div>
+                        <div class="absolute inset-1 rounded-full overflow-hidden">
+                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=3D%20chibi%20cute%20Chinese%20opera%20character%20portrait%2C%20blue%20and%20white%20traditional%20costume%20with%20gold%20decorations%2C%20elaborate%20phoenix%20crown%20headdress%20with%20white%20pom-poms%20and%20red%20ornaments%2C%20big%20red%20eyes%2C%20red%20mark%20on%20forehead%2C%20smiling%20face%2C%20Q%20version%2C%20clay%20figure%20style%2C%20soft%20lighting%2C%20close%20up%20headshot&image_size=square" alt="头像" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    
+                    <div class="relative -ml-2">
+                        <div class="relative bg-gradient-to-r from-[#C4A67C] via-[#D4B88C] to-[#C4A67C] px-5 py-2 rounded-r-lg shadow-md border-r-2 border-[#8B7355]">
+                            <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-[#A08060] to-[#C4A67C] rounded-l"></div>
+                            <p class="font-art text-sm text-[#5C4A32] ml-2">Shanmei User 01</p>
+                            <div class="flex items-center gap-2 mt-1 ml-2">
+                                <div class="w-20 h-1.5 bg-[#8B7355]/30 rounded-full overflow-hidden">
+                                    <div class="w-3/4 h-full bg-gradient-to-r from-[#6B8A5A] to-[#5A7A4A] rounded-full"></div>
+                                </div>
+                                <span class="text-[10px] text-[#6B5A42] font-medium">Lv.3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-6">
+                <div class="relative">
+                    <button onclick="toggleBackpack()" class="group">
+                        <div class="relative flex items-center">
+                            <div class="w-14 h-20 bg-gradient-to-b from-[#8B6914] to-[#6B4F0E] rounded-r-lg shadow-lg flex items-center justify-center border-r-2 border-[#A07818]">
+                                <div class="w-2 h-12 bg-gradient-to-b from-[#C49A20] to-[#A07818] rounded-full"></div>
+                            </div>
+                            
+                            <div class="relative -ml-1 w-40 h-16 bg-gradient-to-r from-[#F5ECD5] via-[#FAF2DD] to-[#F0E5C8] shadow-lg border-y-2 border-[#C4A67C] flex items-center gap-3 pl-3 pr-4 group-hover:translate-x-1 transition-transform">
+                                <div class="text-3xl">🎒</div>
+                                <span class="font-art text-base text-[#5C4A32]">背包</span>
+                            </div>
+                            
+                            <div class="absolute right-0 top-0 bottom-0 w-3 bg-gradient-to-l from-[#C4A67C] to-[#A08560] rounded-r"></div>
+                        </div>
+                    </button>
+                    
+                    <div id="backpack-panel" class="hidden absolute left-full top-0 ml-4 z-40">
+                        <div class="bg-[#FAF2DD]/95 backdrop-blur-sm rounded-xl p-4 shadow-xl border-2 border-[#C4A67C] w-56">
+                            <p class="font-art text-base text-[#5C4A32] mb-3 border-b border-[#C4A67C]/50 pb-2">我的背包</p>
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="aspect-square bg-[#F5ECD5] rounded-lg border border-[#C4A67C] flex items-center justify-center text-xl shadow-inner">🌱</div>
+                                <div class="aspect-square bg-[#F5ECD5] rounded-lg border border-[#C4A67C] flex items-center justify-center text-xl shadow-inner">💧</div>
+                                <div class="aspect-square bg-[#F5ECD5] rounded-lg border border-[#C4A67C] flex items-center justify-center text-xl shadow-inner">🧪</div>
+                                <div class="aspect-square bg-[#F5ECD5] rounded-lg border border-[#C4A67C] flex items-center justify-center text-xl shadow-inner">🪣</div>
+                                <div class="aspect-square bg-[#F5ECD5] rounded-lg border border-[#C4A67C] flex items-center justify-center text-xl shadow-inner">🥄</div>
+                                <div class="aspect-square bg-[#F5ECD5] rounded-lg border border-[#C4A67C] flex items-center justify-center text-xl shadow-inner">📜</div>
+                                <div class="aspect-square bg-[#F5ECD5]/50 rounded-lg border border-[#C4A67C]/30 flex items-center justify-center text-[#C4A67C]/50 text-sm">+</div>
+                                <div class="aspect-square bg-[#F5ECD5]/50 rounded-lg border border-[#C4A67C]/30 flex items-center justify-center text-[#C4A67C]/50 text-sm">+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <button onclick="toggleReward()" class="group">
+                        <div class="relative flex items-center">
+                            <div class="w-14 h-20 bg-gradient-to-b from-[#8B3A14] to-[#6B2A0E] rounded-r-lg shadow-lg flex items-center justify-center border-r-2 border-[#A04818]">
+                                <div class="w-2 h-12 bg-gradient-to-b from-[#C45A20] to-[#A04818] rounded-full"></div>
+                            </div>
+                            
+                            <div class="relative -ml-1 w-40 h-16 bg-gradient-to-r from-[#F5E0D5] via-[#FAEADD] to-[#F0D5C8] shadow-lg border-y-2 border-[#C4887C] flex items-center gap-3 pl-3 pr-4 group-hover:translate-x-1 transition-transform">
+                                <div class="text-3xl">🎁</div>
+                                <span class="font-art text-base text-[#6B4232]">领奖励</span>
+                                <div class="absolute -top-1 -right-1 w-5 h-5 bg-[#C4443A] rounded-full text-white text-xs flex items-center justify-center font-medium shadow">3</div>
+                            </div>
+                            
+                            <div class="absolute right-0 top-0 bottom-0 w-3 bg-gradient-to-l from-[#C4887C] to-[#A06860] rounded-r"></div>
+                        </div>
+                    </button>
+                    
+                    <div id="reward-panel" class="hidden absolute left-full top-0 ml-4 z-40">
+                        <div class="bg-[#FAEADD]/95 backdrop-blur-sm rounded-xl p-4 shadow-xl border-2 border-[#C4887C] w-56">
+                            <p class="font-art text-base text-[#6B4232] mb-3 border-b border-[#C4887C]/50 pb-2">待领取奖励</p>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between p-2 bg-[#F5E0D5] rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-lg">🌱</span>
+                                        <span class="text-xs text-[#6B4232]">每日登录奖励</span>
+                                    </div>
+                                    <button class="px-3 py-1 bg-[#C4443A] text-white text-xs rounded-full hover:bg-[#A03830] transition-colors">领取</button>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-[#F5E0D5] rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-lg">💧</span>
+                                        <span class="text-xs text-[#6B4232]">浇水任务完成</span>
+                                    </div>
+                                    <button class="px-3 py-1 bg-[#C4443A] text-white text-xs rounded-full hover:bg-[#A03830] transition-colors">领取</button>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-[#F5E0D5] rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-lg">🥇</span>
+                                        <span class="text-xs text-[#6B4232]">成就达成</span>
+                                    </div>
+                                    <button class="px-3 py-1 bg-[#C4443A] text-white text-xs rounded-full hover:bg-[#A03830] transition-colors">领取</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute top-1/4 left-1/2 -translate-x-1/2 z-20">
+                <div class="relative w-[400px] h-[450px]">
+                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20Chinese%20green%20plum%20tree%20with%20twisted%20old%20trunk%2C%20lush%20green%20leaves%20with%20small%20green%20plum%20fruits%2C%20traditional%20Chinese%20ink%20wash%20painting%20style%2C%20elegant%20brush%20strokes%2C%20rice%20paper%20texture%2C%20transparent%20background&image_size=portrait_4_3" alt="青梅古树" class="absolute inset-0 w-full h-full object-contain drop-shadow-2xl">
+                    
+                    <div class="absolute -left-20 bottom-12 z-30">
+                        <div class="relative cursor-pointer hover:scale-105 transition-transform" onclick="handleAction('plant')">
+                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=3D%20chibi%20cute%20Chinese%20opera%20character%2C%20blue%20and%20white%20traditional%20costume%20with%20gold%20decorations%2C%20elaborate%20phoenix%20crown%20headdress%20with%20white%20pom-poms%20and%20red%20ornaments%2C%20big%20red%20eyes%2C%20red%20mark%20on%20forehead%2C%20holding%20small%20shovel%20digging%20ground%2C%20happy%20expression%2C%20Q%20version%2C%20clay%20figure%20style%2C%20soft%20lighting%2C%20transparent%20background&image_size=portrait_4_3" alt="种植英歌" class="w-24 h-auto object-contain drop-shadow-lg">
+                            <div class="absolute -top-6 left-1/2 -translate-x-1/2">
+                                <div class="relative bg-[#FFF5E0] border-2 border-[#E8C872] rounded-xl px-3 py-1.5 shadow-lg">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-base">🌱</span>
+                                        <span class="text-xs text-[#8B6914] font-medium">种子</span>
+                                    </div>
+                                    <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-[#E8C872]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute -right-24 bottom-16 z-30">
+                        <div class="relative cursor-pointer hover:scale-105 transition-transform" onclick="handleAction('water')">
+                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=3D%20chibi%20cute%20Chinese%20opera%20character%2C%20blue%20and%20white%20traditional%20costume%20with%20gold%20decorations%2C%20elaborate%20phoenix%20crown%20headdress%20with%20white%20pom-poms%20and%20red%20ornaments%2C%20big%20red%20eyes%2C%20red%20mark%20on%20forehead%2C%20holding%20watering%20can%20watering%20plant%2C%20gentle%20expression%2C%20Q%20version%2C%20clay%20figure%20style%2C%20soft%20lighting%2C%20transparent%20background&image_size=portrait_4_3" alt="浇水英歌" class="w-24 h-auto object-contain drop-shadow-lg">
+                            <div class="absolute -top-6 right-0">
+                                <div class="relative bg-[#E0F0FF] border-2 border-[#7CB8E8] rounded-xl px-3 py-1.5 shadow-lg">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-base">💧</span>
+                                        <span class="text-xs text-[#2C6B9E] font-medium">浇水</span>
+                                    </div>
+                                    <div class="absolute -bottom-2 right-4 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-[#7CB8E8]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute -right-12 top-8 z-30">
+                        <div class="relative cursor-pointer hover:scale-105 transition-transform" onclick="handleAction('harvest')">
+                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=3D%20chibi%20cute%20Chinese%20opera%20character%2C%20blue%20and%20white%20traditional%20costume%20with%20gold%20decorations%2C%20elaborate%20phoenix%20crown%20headdress%20with%20white%20pom-poms%20and%20red%20ornaments%2C%20big%20red%20eyes%2C%20red%20mark%20on%20forehead%2C%20holding%20basket%20full%20of%20green%20plums%2C%20happy%20smiling%20expression%2C%20Q%20version%2C%20clay%20figure%20style%2C%20soft%20lighting%2C%20transparent%20background&image_size=portrait_4_3" alt="摘果英歌" class="w-20 h-auto object-contain drop-shadow-lg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute top-20 right-4 z-30 flex flex-col gap-6">
+                <div class="relative">
+                    <button onclick="toggleEnergyPanel()" class="group relative block">
+                        <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#D4C4A0] via-[#C4A870] to-[#A08850] border-[3px] border-[#8B6914] shadow-xl group-hover:scale-105 transition-transform">
+                            <div class="absolute inset-1 rounded-full border border-[#E8D8A8]/50"></div>
+                            <div class="absolute inset-2 rounded-full bg-gradient-to-br from-[#F5E8C8] to-[#E8D4A0] flex flex-col items-center justify-center">
+                                <span class="font-art text-base text-[#5C4A1A] leading-tight">9g</span>
+                                <span class="text-[9px] text-[#7A6328] leading-tight mt-0.5">梅梅能量</span>
+                            </div>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-5 h-5 bg-[#C4443A] rounded-full flex items-center justify-center">
+                            <span class="text-white text-[9px] font-bold">!</span>
+                        </div>
+                    </button>
+                    <div id="energy-panel" class="hidden absolute right-full top-0 mr-3 z-40">
+                        <div class="bg-[#FAF2DD]/95 backdrop-blur-sm rounded-xl p-3 shadow-xl border-2 border-[#C4A870] w-44">
+                            <p class="font-art text-sm text-[#5C4A1A] mb-2">能量说明</p>
+                            <div class="space-y-1.5 text-xs text-[#7A6328]">
+                                <div class="flex justify-between"><span>浇水能量</span><span class="text-[#5C4A1A]">+5g/次</span></div>
+                                <div class="flex justify-between"><span>施肥能量</span><span class="text-[#5C4A1A]">+10g/次</span></div>
+                                <div class="flex justify-between"><span>摘果能量</span><span class="text-[#5C4A1A]">+3g/次</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <button onclick="toggleGiftPanel()" class="group relative block">
+                        <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#8AB88A] via-[#5A8A5A] to-[#3D6B3D] border-[3px] border-[#2D5A2D] shadow-xl group-hover:scale-105 transition-transform">
+                            <div class="absolute inset-1 rounded-full border border-[#A8D8A8]/40"></div>
+                            <div class="absolute inset-2 rounded-full bg-gradient-to-br from-[#C8E8C8] to-[#98C898] flex flex-col items-center justify-center">
+                                <span class="font-art text-base text-[#2D5A2D] leading-tight">260g</span>
+                                <span class="text-[9px] text-[#3D6B3D] leading-tight mt-0.5">能量</span>
+                            </div>
+                        </div>
+                    </button>
+                    <div id="gift-panel" class="hidden absolute right-full top-0 mr-3 z-40">
+                        <div class="bg-[#E8F5E8]/95 backdrop-blur-sm rounded-xl p-3 shadow-xl border-2 border-[#8AB88A] w-44">
+                            <p class="font-art text-sm text-[#2D5A2D] mb-2">我的能量</p>
+                            <p class="text-xs text-[#3D6B3D]">可用于加速青梅成长，解锁更多玩法</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <button onclick="toggleGift2Panel()" class="group relative block">
+                        <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#D8A8B8] via-[#B8788A] to-[#985868] border-[3px] border-[#7A3A4A] shadow-xl group-hover:scale-105 transition-transform">
+                            <div class="absolute inset-1 rounded-full border border-[#E8C8D8]/40"></div>
+                            <div class="absolute inset-2 rounded-full bg-gradient-to-br from-[#F0D8E0] to-[#E0B8C8] flex flex-col items-center justify-center">
+                                <span class="font-art text-base text-[#7A3A4A] leading-tight">200g</span>
+                                <span class="text-[9px] text-[#985868] leading-tight mt-0.5">礼物</span>
+                            </div>
+                        </div>
+                    </button>
+                    <div id="gift2-panel" class="hidden absolute right-full top-0 mr-3 z-40">
+                        <div class="bg-[#F5E8EC]/95 backdrop-blur-sm rounded-xl p-3 shadow-xl border-2 border-[#D8A8B8] w-44">
+                            <p class="font-art text-sm text-[#7A3A4A] mb-2">我的礼物</p>
+                            <p class="text-xs text-[#985868]">好友赠送的礼物，可兑换奖励</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-aigc" class="view-container bg-meihua-light">
+        <div class="relative min-h-screen flex flex-col items-center pt-24 pb-16 px-4">
+            <div class="absolute inset-0 opacity-30">
+                <div class="absolute inset-0 bg-gradient-to-b from-meihua-light via-meihua-soft/30 to-meihua-accent/5"></div>
+            </div>
+
+            <div class="relative z-10 w-full max-w-md">
+                <div class="text-center mb-8">
+                    <span class="inline-block text-meihua-accent text-xs tracking-widest mb-2">EXCLUSIVE MEMORY</span>
+                    <h2 class="font-art text-3xl text-meihua-dark">独家记忆</h2>
+                    <p class="text-meihua-deep text-base font-light mt-2">上传照片 · 定制专属英歌记忆</p>
+                </div>
+
+                <div class="flex justify-between items-center mb-8 px-2">
+                    <div class="flex flex-col items-center">
+                        <div id="step1-dot" class="w-8 h-8 rounded-full bg-meihua-dark text-white flex items-center justify-center text-sm font-medium">1</div>
+                        <span class="text-meihua-dark text-xs mt-1">上传照片</span>
+                    </div>
+                    <div class="flex-1 h-0.5 mx-2 bg-meihua-accent/30"></div>
+                    <div class="flex flex-col items-center">
+                        <div id="step2-dot" class="w-8 h-8 rounded-full bg-meihua-accent/30 text-meihua-muted flex items-center justify-center text-sm font-medium">2</div>
+                        <span class="text-meihua-muted text-xs mt-1">选择脸谱</span>
+                    </div>
+                    <div class="flex-1 h-0.5 mx-2 bg-meihua-accent/30"></div>
+                    <div class="flex flex-col items-center">
+                        <div id="step3-dot" class="w-8 h-8 rounded-full bg-meihua-accent/30 text-meihua-muted flex items-center justify-center text-sm font-medium">3</div>
+                        <span class="text-meihua-muted text-xs mt-1">生成形象</span>
+                    </div>
+                    <div class="flex-1 h-0.5 mx-2 bg-meihua-accent/30"></div>
+                    <div class="flex flex-col items-center">
+                        <div id="step4-dot" class="w-8 h-8 rounded-full bg-meihua-accent/30 text-meihua-muted flex items-center justify-center text-sm font-medium">4</div>
+                        <span class="text-meihua-muted text-xs mt-1">确认下单</span>
+                    </div>
+                </div>
+
+                <div id="aigc-step1" class="aigc-step">
+                    <div class="glass-card rounded-2xl p-6 mb-6">
+                        <div class="text-center mb-6">
+                            <h3 class="font-art text-xl text-meihua-dark mb-2">第一步：上传您的照片</h3>
+                            <p class="text-meihua-muted text-sm">AI将基于您的五官特征匹配最适合的英歌脸谱</p>
+                        </div>
+
+                        <div id="upload-area" class="relative h-56 rounded-xl border-2 border-dashed border-meihua-accent/50 flex flex-col items-center justify-center cursor-pointer hover:border-meihua-accent transition-colors" onclick="document.getElementById('real-file-input').click()">
+                            <div id="upload-placeholder" class="flex flex-col items-center">
+                                <div class="w-16 h-16 rounded-full bg-meihua-accent/20 flex items-center justify-center mb-4">
+                                    <svg viewBox="0 0 24 24" class="w-8 h-8 text-meihua-dark">
+                                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="currentColor" />
+                                    </svg>
+                                </div>
+                                <p class="text-meihua-dark text-sm font-medium">点击上传照片</p>
+                                <p class="text-meihua-muted text-xs mt-1">支持 JPG、PNG 格式</p>
+                            </div>
+                            <img id="preview-image" class="absolute inset-0 w-full h-full object-cover rounded-xl hidden" alt="预览图">
+                        </div>
+
+                        <input type="file" id="real-file-input" accept="image/*" class="hidden" onchange="onFileSelected(this)">
+
+                        <div id="upload-tips" class="mt-4 p-3 bg-meihua-accent/10 rounded-lg">
+                            <p class="text-meihua-dark text-xs font-medium mb-1">📷 拍照小贴士</p>
+                            <ul class="text-meihua-muted text-xs space-y-1">
+                                <li>· 正面免冠，五官清晰可见</li>
+                                <li>· 光线均匀，避免阴影遮挡</li>
+                                <li>· 表情自然，效果更佳</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <button id="btn-to-step2" onclick="goToStep2()" class="w-full py-4 rounded-xl btn-primary font-art text-base flex items-center justify-center gap-2 opacity-50 cursor-not-allowed" disabled>
+                        开始AI匹配
+                        <svg viewBox="0 0 24 24" class="w-5 h-5">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="aigc-step2" class="aigc-step hidden">
+                    <div class="glass-card rounded-2xl p-6 mb-6">
+                        <div class="text-center mb-6">
+                            <h3 class="font-art text-xl text-meihua-dark mb-2">第二步：选择您喜欢的脸谱</h3>
+                            <p id="matched-count-text" class="text-meihua-muted text-sm">AI为您匹配了3款最适合的英歌脸谱</p>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3" id="matched-faces-container">
+                        </div>
+
+                        <div class="mt-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-meihua-dark text-sm font-medium">当前选中</span>
+                                <span id="selected-face-name" class="text-meihua-accent text-sm font-medium">黑脸英歌</span>
+                            </div>
+                            <p id="selected-face-desc" class="text-meihua-muted text-xs leading-relaxed">
+                                勇猛刚直，正气凛然。源于《水浒传》中梁山好汉的形象，象征着勇猛、刚直、正义。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="goToStep1()" class="flex-1 py-4 rounded-xl bg-white border border-meihua-accent/50 text-meihua-dark font-art text-base">
+                            上一步
+                        </button>
+                        <button onclick="goToStep3()" class="flex-1 py-4 rounded-xl btn-primary font-art text-base flex items-center justify-center gap-2">
+                            生成形象
+                            <svg viewBox="0 0 24 24" class="w-5 h-5">
+                                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="aigc-step3" class="aigc-step hidden">
+                    <div class="glass-card rounded-2xl p-6 mb-6">
+                        <div class="text-center mb-6">
+                            <h3 class="font-art text-xl text-meihua-dark mb-2">第三步：您的专属英歌形象</h3>
+                            <p class="text-meihua-muted text-sm">AI已为您生成独一无二的英歌卡通角色</p>
+                        </div>
+
+                        <div class="relative h-72 rounded-xl overflow-hidden mb-4 bg-gradient-to-br from-meihua-accent/20 to-meihua-dark/10">
+                            <img id="cartoon-character-image" src="" alt="英歌卡通形象" class="w-full h-full object-cover">
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-meihua-dark/80 to-transparent p-4">
+                                <p id="cartoon-character-name" class="text-white font-art text-lg">黑脸英歌 · 卡通形象</p>
+                                <p class="text-meihua-accent text-xs mt-1">AI独家生成 · 独一无二</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3 bg-meihua-accent/10 rounded-lg text-center">
+                                <p class="text-meihua-dark text-xs font-medium">匹配度</p>
+                                <p id="cartoon-match-rate" class="text-meihua-accent text-lg font-art mt-1">96%</p>
+                            </div>
+                            <div class="p-3 bg-meihua-accent/10 rounded-lg text-center">
+                                <p class="text-meihua-dark text-xs font-medium">角色定位</p>
+                                <p id="cartoon-role" class="text-meihua-accent text-lg font-art mt-1">先锋</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="goToStep2()" class="flex-1 py-4 rounded-xl bg-white border border-meihua-accent/50 text-meihua-dark font-art text-base">
+                            重新选择
+                        </button>
+                        <button onclick="goToStep4()" class="flex-1 py-4 rounded-xl btn-primary font-art text-base flex items-center justify-center gap-2">
+                            立即定制
+                            <svg viewBox="0 0 24 24" class="w-5 h-5">
+                                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="aigc-step4" class="aigc-step hidden">
+                    <div class="glass-card rounded-2xl p-6 mb-6">
+                        <div class="text-center mb-6">
+                            <h3 class="font-art text-xl text-meihua-dark mb-2">第四步：确认订单</h3>
+                            <p class="text-meihua-muted text-sm">请确认您的定制信息</p>
+                        </div>
+
+                        <div class="relative h-48 rounded-xl overflow-hidden mb-4">
+                            <img id="order-product-image" src="" alt="定制产品" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-meihua-dark/60 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <p class="text-white font-art text-lg">山梅纪 · 定制青梅酒</p>
+                                <p class="text-meihua-accent text-xs mt-1">专属英歌脸谱包装</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 mb-6">
+                            <div class="flex justify-between items-center pb-3 border-b border-meihua-accent/20">
+                                <span class="text-meihua-muted text-sm">产品名称</span>
+                                <span class="text-meihua-dark text-sm font-medium">山梅纪青梅酒（定制款）</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-3 border-b border-meihua-accent/20">
+                                <span class="text-meihua-muted text-sm">规格</span>
+                                <span class="text-meihua-dark text-sm">500ml / 瓶</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-3 border-b border-meihua-accent/20">
+                                <span class="text-meihua-muted text-sm">脸谱款式</span>
+                                <span id="order-face-style" class="text-meihua-dark text-sm font-medium">黑脸英歌</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-3 border-b border-meihua-accent/20">
+                                <span class="text-meihua-muted text-sm">定制刻字</span>
+                                <span class="text-meihua-dark text-sm">限量纪念版</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-meihua-muted text-sm">价格</span>
+                                <span class="text-meihua-accent text-xl font-art">¥298</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-meihua-accent/10 rounded-xl">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-meihua-accent/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <svg viewBox="0 0 24 24" class="w-4 h-4 text-meihua-dark">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-meihua-dark text-sm font-medium">定制说明</p>
+                                    <p class="text-meihua-muted text-xs mt-1 leading-relaxed">
+                                        定制产品预计7-10个工作日发货。每一瓶都是独一无二的艺术品，支持7天无理由退换。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="goToStep3()" class="flex-1 py-4 rounded-xl bg-white border border-meihua-accent/50 text-meihua-dark font-art text-base">
+                            返回修改
+                        </button>
+                        <button onclick="placeOrder()" class="flex-1 py-4 rounded-xl btn-primary font-art text-base flex items-center justify-center gap-2">
+                            立即下单
+                            <svg viewBox="0 0 24 24" class="w-5 h-5">
+                                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" fill="currentColor" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="aigc-success" class="aigc-step hidden">
+                    <div class="glass-card rounded-2xl p-8 text-center">
+                        <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-meihua-accent/20 flex items-center justify-center">
+                            <svg viewBox="0 0 24 24" class="w-10 h-10 text-meihua-dark">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor" />
+                            </svg>
+                        </div>
+                        <h3 class="font-art text-2xl text-meihua-dark mb-2">下单成功！</h3>
+                        <p class="text-meihua-muted text-sm mb-6">感谢您的定制，我们将尽快为您生产</p>
+
+                        <div class="bg-meihua-accent/10 rounded-xl p-4 mb-6 text-left">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-meihua-muted text-sm">订单编号</span>
+                                <span id="order-number" class="text-meihua-dark text-sm font-medium">SMJ20240101001</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-meihua-muted text-sm">预计发货</span>
+                                <span class="text-meihua-dark text-sm font-medium">7-10个工作日</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-meihua-muted text-sm">支付金额</span>
+                                <span class="text-meihua-accent text-lg font-art">¥298</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button onclick="resetAIGC()" class="flex-1 py-3 rounded-xl bg-white border border-meihua-accent/50 text-meihua-dark font-art text-sm">
+                                继续定制
+                            </button>
+                            <button onclick="switchView('product')" class="flex-1 py-3 rounded-xl btn-primary font-art text-sm">
+                                查看更多产品
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-product" class="view-container bg-meihua-light">
+        <div class="relative min-h-screen flex flex-col items-center pt-24 pb-16 px-4">
+            <div class="absolute inset-0 opacity-30">
+                <svg viewBox="0 0 1000 1000" class="w-full h-full">
+                    <circle cx="200" cy="300" r="150" fill="rgba(193,216,172,0.08)" />
+                    <circle cx="800" cy="700" r="200" fill="rgba(193,216,172,0.08)" />
+                    <path d="M0,600 Q300,550 600,600 T1000,600" stroke="rgba(44,74,62,0.06)" stroke-width="1.5" fill="none" />
+                </svg>
+            </div>
+
+            <div class="relative z-10 w-full max-w-md">
+                <div class="text-center mb-10">
+                    <span class="inline-block text-meihua-accent text-xs tracking-widest mb-2">PRODUCTS</span>
+                    <h2 class="font-art text-3xl text-meihua-dark">山梅好礼</h2>
+                    <p class="text-meihua-deep text-base font-light mt-2">非遗文创 · 匠心传承</p>
+                </div>
+
+                <div class="glass-card rounded-2xl overflow-hidden mb-6">
+                    <div class="relative h-48 bg-gradient-to-br from-meihua-accent/30 to-meihua-dark/10 overflow-hidden">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Chinese%20traditional%20green%20plum%20wine%20gift%20box%20set%2C%20elegant%20packaging%20with%20opera%20mask%20design%2C%20deep%20green%20and%20gold%20colors%2C%20premium%20product%20photography%2C%20soft%20natural%20lighting%2C%20traditional%20Chinese%20style&image_size=landscape_16_9" alt="山梅纪礼盒" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-meihua-dark/40 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <p class="font-art text-xl">山梅纪 · 非遗臻礼</p>
+                            <p class="text-xs opacity-80">梅香满堂 · 非遗贺礼</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-card rounded-xl overflow-hidden cursor-pointer transition-transform active:scale-95">
+                        <div class="relative h-32 bg-meihua-soft">
+                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Chinese%20green%20plum%20wine%20bottle%2C%20elegant%20glass%20bottle%20with%20red%20label%20featuring%20opera%20mask%2C%20traditional%20Chinese%20style%2C%20premium%20product%20photography%2C%20soft%20lighting%2C%20minimalist%20background&image_size=square" alt="青梅酒" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-3">
+                            <h3 class="font-art text-meihua-dark text-sm">青梅酒</h3>
+                            <p class="text-meihua-muted text-xs mt-1">古法精酿 · 12度</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="font-art text-meihua-dark">500ml</span>
+                                <span class="text-meihua-accent text-xs">详情</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-xl overflow-hidden cursor-pointer transition-transform active:scale-95">
+                        <div class="relative h-32 bg-meihua-soft">
+                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Chinese%20green%20plum%20cake%20tin%20can%2C%20round%20metal%20container%20with%20opera%20mask%20design%2C%20dark%20green%20and%20red%20colors%2C%20traditional%20Chinese%20style%2C%20premium%20product%20photography%2C%20soft%20lighting&image_size=square" alt="青梅饼" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-3">
+                            <h3 class="font-art text-meihua-dark text-sm">青梅饼</h3>
+                            <p class="text-meihua-muted text-xs mt-1">酸甜可口 · 蜜饯</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="font-art text-meihua-dark">150g</span>
+                                <span class="text-meihua-accent text-xs">详情</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-xl overflow-hidden cursor-pointer transition-transform active:scale-95">
+                        <div class="relative h-32 bg-meihua-soft">
+                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Chinese%20green%20plum%20dried%20fruit%20tin%20can%2C%20round%20metal%20container%20with%20opera%20mask%20design%2C%20red%20and%20gold%20colors%2C%20traditional%20Chinese%20style%2C%20premium%20product%20photography%2C%20soft%20lighting&image_size=square" alt="青梅干" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-3">
+                            <h3 class="font-art text-meihua-dark text-sm">青梅干</h3>
+                            <p class="text-meihua-muted text-xs mt-1">古法晾晒 · 原味</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="font-art text-meihua-dark">150g</span>
+                                <span class="text-meihua-accent text-xs">详情</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-xl overflow-hidden cursor-pointer transition-transform active:scale-95">
+                        <div class="relative h-32 bg-meihua-soft">
+                            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Chinese%20green%20plum%20vinegar%20bottle%2C%20elegant%20green%20glass%20bottle%2C%20traditional%20Chinese%20style%20packaging%2C%20premium%20product%20photography%2C%20soft%20natural%20lighting%2C%20minimalist%20background&image_size=square" alt="青梅醋" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-3">
+                            <h3 class="font-art text-meihua-dark text-sm">青梅醋</h3>
+                            <p class="text-meihua-muted text-xs mt-1">自然发酵 · 调味</p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="font-art text-meihua-dark">500ml</span>
+                                <span class="text-meihua-accent text-xs">详情</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 glass-card rounded-xl p-4 overflow-hidden">
+                    <div class="relative h-28">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Chinese%20traditional%20gift%20bag%20and%20gift%20box%20set%2C%20green%20plum%20products%2C%20elegant%20packaging%20with%20opera%20mask%2C%20cream%20and%20green%20colors%2C%20premium%20product%20photography%2C%20soft%20lighting&image_size=landscape_16_9" alt="山梅纪礼盒套装" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex items-center justify-between mt-3">
+                        <div>
+                            <p class="font-art text-meihua-dark">山梅纪礼盒套装</p>
+                            <p class="text-meihua-muted text-xs">精选组合 · 送礼臻选</p>
+                        </div>
+                        <span class="text-meihua-accent text-sm">查看</span>
+                    </div>
+                </div>
+
+                <button class="w-full mt-8 py-4 rounded-xl btn-primary font-art text-base">
+                    立即选购
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="face-modal-overlay" class="mask-overlay" onclick="closeFaceModal()">
+        <div id="face-modal-content" class="modal-content absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl glass-modal p-6" onclick="event.stopPropagation()">
+            <button onclick="closeFaceModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-meihua-accent/20 flex items-center justify-center text-meihua-dark">
+                <svg viewBox="0 0 24 24" class="w-4 h-4">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor" />
+                </svg>
+            </button>
+
+            <div id="modal-face-icon" class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-meihua-accent to-meihua-dark/30 flex items-center justify-center">
+                <svg viewBox="0 0 64 64" class="w-14 h-14">
+                    <circle cx="32" cy="32" r="28" fill="#D2E3C8" />
+                    <circle cx="32" cy="32" r="24" fill="#F4F7F4" />
+                    <circle cx="22" cy="28" r="6" fill="#2C4A3E" />
+                    <circle cx="42" cy="28" r="6" fill="#2C4A3E" />
+                    <circle cx="22" cy="28" r="2" fill="#fff" />
+                    <circle cx="42" cy="28" r="2" fill="#fff" />
+                    <path d="M20 42 Q32 52 44 42" stroke="#2C4A3E" stroke-width="3" fill="none" />
+                </svg>
+            </div>
+
+            <h3 id="modal-face-title" class="font-art text-2xl text-meihua-dark text-center mb-2">黑脸英歌</h3>
+            <p id="modal-face-tag" class="text-meihua-accent text-sm text-center mb-6">勇猛刚直 · 正气凛然</p>
+
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-art text-meihua-dark mb-2">角色背景</h4>
+                    <p id="modal-face-story" class="text-meihua-muted text-sm leading-relaxed">
+                        黑脸英歌源于《水浒传》中梁山好汉的形象，象征着勇猛、刚直、正义。脸谱以黑色为主色调，配以鲜明的白色纹饰，展现英歌舞粗犷豪放的艺术风格。
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-art text-meihua-dark mb-2">人物典故</h4>
+                    <p id="modal-face-lore" class="text-meihua-muted text-sm leading-relaxed">
+                        在普宁英歌舞中，黑脸角色通常扮演梁山好汉中的猛将，如李逵、鲁智深等。他们的动作刚劲有力，鼓声震天，展现出不屈不挠的英雄气概。
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-art text-meihua-dark mb-2">民俗讲解</h4>
+                    <p id="modal-face-culture" class="text-meihua-muted text-sm leading-relaxed">
+                        英歌舞是普宁地区最具代表性的传统民俗舞蹈，被誉为"中国汉族男子汉典型舞蹈"。每年春节、元宵等节日，英歌舞队都会走街串巷，祈求风调雨顺、国泰民安。
+                    </p>
+                </div>
+            </div>
+
+            <button onclick="handleConfirmCustomization(selectedMaskId || 0, userImageUrl)" class="w-full mt-6 py-4 rounded-xl btn-primary font-art text-lg flex items-center justify-center gap-2">
+                <span>【AI共创】定制我的专属包装</span>
+                <svg viewBox="0 0 24 24" class="w-5 h-5">
+                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="currentColor" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="mask-overlay" style="z-index: 110;">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+            <div class="relative">
+                <div class="w-16 h-16 loading-ring"></div>
+                <div class="absolute inset-0 w-16 h-16 loading-ring" style="animation-delay: 0.3s;"></div>
+                <div class="absolute inset-0 w-16 h-16 loading-ring" style="animation-delay: 0.6s;"></div>
+            </div>
+            <p class="text-meihua-dark mt-6 font-art text-lg">AI渲染中...</p>
+            <p class="text-meihua-muted text-sm mt-2">正在生成专属包装设计</p>
+        </div>
+    </div>
+
+    <div id="result-overlay" class="mask-overlay" style="z-index: 110;">
+        <div class="modal-content absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm rounded-2xl overflow-hidden" onclick="event.stopPropagation()">
+            <div class="relative h-64 bg-gradient-to-br from-meihua-accent to-meihua-dark/30 p-6 flex flex-col items-center justify-center">
+                <div class="absolute inset-0 opacity-20">
+                    <svg viewBox="0 0 400 200" class="w-full h-full">
+                        <circle cx="200" cy="100" r="150" fill="none" stroke="#2C4A3E" stroke-width="1" />
+                        <circle cx="200" cy="100" r="100" fill="none" stroke="#2C4A3E" stroke-width="0.5" />
+                    </svg>
+                </div>
+                <div class="product-bottle w-24 h-48 rounded-t-lg rounded-b-3xl animate-breathing relative">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent"></div>
+                    <div class="absolute bottom-6 left-3 right-3 h-16 glass-card rounded-lg flex flex-col items-center justify-center">
+                        <div class="w-8 h-8 rounded-full bg-meihua-dark/20 mb-1"></div>
+                        <p class="text-meihua-dark text-xs">定制专属包装</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-meihua-light p-6">
+                <div class="text-center mb-6">
+                    <h3 class="font-art text-2xl text-meihua-dark mb-2">定制成功</h3>
+                    <p class="text-meihua-muted text-sm">您的专属英歌舞脸谱包装已生成</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closeResultModal()" class="flex-1 py-3 rounded-xl glass-card text-meihua-dark font-medium">
+                        关闭
+                    </button>
+                    <button class="flex-1 py-3 rounded-xl btn-accent font-medium">
+                        分享海报
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import QINIU_CONFIG from './src/config.js';
+
+        const faceData = [
+            {
+                title: '黑脸英歌',
+                tag: '勇猛刚直 · 正气凛然',
+                story: '黑脸英歌源于《水浒传》中梁山好汉的形象，象征着勇猛、刚直、正义。脸谱以黑色为主色调，配以鲜明的白色纹饰，展现英歌舞粗犷豪放的艺术风格。',
+                lore: '在普宁英歌舞中，黑脸角色通常扮演梁山好汉中的猛将，如李逵、鲁智深等。他们的动作刚劲有力，鼓声震天，展现出不屈不挠的英雄气概。',
+                culture: '英歌舞是普宁地区最具代表性的传统民俗舞蹈，被誉为"中国汉族男子汉典型舞蹈"。每年春节、元宵等节日，英歌舞队都会走街串巷，祈求风调雨顺、国泰民安。',
+                icon: `<svg viewBox="0 0 64 64" class="w-14 h-14">
+                    <circle cx="32" cy="32" r="28" fill="#D2E3C8" />
+                    <circle cx="32" cy="32" r="24" fill="#F4F7F4" />
+                    <circle cx="22" cy="28" r="6" fill="#2C4A3E" />
+                    <circle cx="42" cy="28" r="6" fill="#2C4A3E" />
+                    <circle cx="22" cy="28" r="2" fill="#fff" />
+                    <circle cx="42" cy="28" r="2" fill="#fff" />
+                    <path d="M20 42 Q32 52 44 42" stroke="#2C4A3E" stroke-width="3" fill="none" />
+                    <path d="M24 36 L32 44 L40 36" stroke="#C1D8AC" stroke-width="2" fill="none" />
+                </svg>`
+            },
+            {
+                title: '红脸英歌',
+                tag: '忠义仁勇 · 赤诚丹心',
+                story: '红脸英歌代表忠义、仁勇的形象，灵感源自三国名将关羽。脸谱以红色为主，象征着赤诚丹心、忠肝义胆，是英歌舞中最具代表性的角色之一。',
+                lore: '红脸角色在英歌舞中通常扮演忠义双全的英雄人物，如关羽、岳飞等。他们的表演庄重威严，鼓声沉稳有力，传达出忠诚报国的精神内涵。',
+                culture: '英歌舞中的红脸形象不仅是对历史英雄的致敬，更是潮汕人民崇尚忠义、坚守诚信的精神象征。这种文化传统在普宁地区代代相传，成为当地的文化瑰宝。',
+                icon: `<svg viewBox="0 0 64 64" class="w-14 h-14">
+                    <circle cx="32" cy="32" r="28" fill="#C1D8AC" />
+                    <circle cx="32" cy="32" r="24" fill="#EAEFEA" />
+                    <ellipse cx="22" cy="28" rx="7" ry="5" fill="#2C4A3E" />
+                    <ellipse cx="42" cy="28" rx="7" ry="5" fill="#2C4A3E" />
+                    <circle cx="22" cy="28" r="2" fill="#fff" />
+                    <circle cx="42" cy="28" r="2" fill="#fff" />
+                    <path d="M18 44 Q32 54 46 44" stroke="#2C4A3E" stroke-width="3" fill="none" />
+                    <circle cx="32" cy="38" r="4" fill="#D2E3C8" />
+                </svg>`
+            },
+            {
+                title: '花脸英歌',
+                tag: '威武霸气 · 气势磅礴',
+                story: '花脸英歌以多彩的纹饰和夸张的造型著称，展现出英歌舞最具视觉冲击力的一面。复杂的脸谱图案象征着角色的特殊身份和超凡能力。',
+                lore: '花脸角色通常扮演神话传说中的人物或性格复杂的英雄。他们的脸谱色彩斑斓，造型独特，每一种图案都有其特定的含义和象征意义。',
+                culture: '英歌舞的脸谱艺术融合了戏曲、绘画、雕塑等多种艺术形式，是中国民间艺术的杰出代表。每一张脸谱都是艺术家精心创作的艺术品，蕴含着丰富的文化内涵。',
+                icon: `<svg viewBox="0 0 64 64" class="w-14 h-14">
+                    <circle cx="32" cy="32" r="28" fill="#F4F7F4" />
+                    <circle cx="32" cy="32" r="24" fill="#D2E3C8" />
+                    <circle cx="22" cy="28" r="5" fill="#2C4A3E" />
+                    <circle cx="42" cy="28" r="5" fill="#2C4A3E" />
+                    <circle cx="22" cy="28" r="2" fill="#fff" />
+                    <circle cx="42" cy="28" r="2" fill="#fff" />
+                    <path d="M22 42 Q32 48 42 42" stroke="#2C4A3E" stroke-width="3" fill="none" />
+                    <path d="M16 30 L20 38 L12 38 Z" fill="#C1D8AC" opacity="0.5" />
+                    <path d="M48 30 L44 38 L52 38 Z" fill="#C1D8AC" opacity="0.5" />
+                </svg>`
+            }
+        ];
+
+        function proxyUrl(targetUrl) {
+            return `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
+        }
+
+        let currentView = 'dashboard';
+        let userImageUrl = '';
+        let selectedMaskId = null;
+
+        function showLoading(message) {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = loadingOverlay.querySelector('p');
+            if (loadingText) {
+                loadingText.textContent = message || 'AI渲染中...';
+            }
+            loadingOverlay.classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('active');
+        }
+
+        async function getQiniuToken() {
+            try {
+                const response = await fetch('/api/get-qiniu-token');
+                if (!response.ok) {
+                    throw new Error('获取上传凭证失败');
+                }
+                const data = await response.json();
+                return data.uploadToken;
+            } catch (error) {
+                console.warn('后端服务未就绪，使用模拟Token:', error);
+                return 'mock-upload-token-for-hackathon';
+            }
+        }
+
+        async function handlePhotoUpload(file) {
+            showLoading("AI 正在深度解析五官特征并匹配英歌脸谱...");
+
+            try {
+                const uploadToken = await getQiniuToken();
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('token', uploadToken);
+
+                const uploadRes = await fetch(proxyUrl(QINIU_CONFIG.UPLOAD_URL), {
+                    method: 'POST',
+                    body: formData
+                });
+                const uploadData = await uploadRes.json();
+                userImageUrl = `${QINIU_CONFIG.BUCKET_DOMAIN}/${uploadData.key || 'uploaded-image.jpg'}`;
+
+                const aiRes = await fetch(proxyUrl(`${QINIU_CONFIG.AI_GATEWAY}/match-mask`), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_url: userImageUrl })
+                });
+
+                if (!aiRes.ok) {
+                    throw new Error('AI匹配失败');
+                }
+
+                const aiData = await aiRes.json();
+
+                hideLoading();
+                renderMaskSelection(aiData.masks || faceData);
+            } catch (error) {
+                hideLoading();
+                console.error("接入错误:", error);
+                alert("烟雨朦胧，AI 匹配出现未知波动，请检查接口配置。");
+            }
+        }
+
+        async function handleConfirmCustomization(maskId, imageUrl) {
+            selectedMaskId = maskId;
+            showLoading("大模型正在跨界融合，生成您的限定英歌卡通包装...");
+
+            try {
+                const res = await fetch(proxyUrl(`${QINIU_CONFIG.AI_GATEWAY}/generate-avatar`), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        mask_id: maskId, 
+                        face_url: imageUrl || userImageUrl 
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error('文创包装生成失败');
+                }
+
+                const data = await res.json();
+
+                hideLoading();
+
+                const posterImage = document.getElementById('posterImage');
+                if (posterImage && data.poster_url) {
+                    posterImage.src = data.poster_url;
+                }
+                document.getElementById('result-overlay').classList.add('active');
+                document.querySelector('#result-overlay .modal-content').classList.add('active');
+            } catch (error) {
+                hideLoading();
+                console.error("生成失败:", error);
+                alert("文创包装渲染失败，请检查七牛云算力响应。");
+            }
+        }
+
+        let aigcCurrentStep = 1;
+        let selectedFaceIndex = 0;
+        let uploadedFile = null;
+
+        const faceDataFull = [
+            {
+                title: '母夜叉 · 孙二娘',
+                tag: '青面 · 爽利泼辣',
+                desc: '爽利泼辣，敢爱敢恨；青面晕染、眉眼凌厉，线条粗狂，自带气场。寓意：惩恶扬善、坦荡洒脱，象征不卑不亢的侠女气。',
+                role: '女将',
+                matchRate: '95%',
+                imagePrompt: 'Chinese Yingge dance opera face mask green color, female warrior Sun Erniang, green face with fierce eyes, traditional headdress with green leaves and golden ornaments, elegant but powerful, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '孙二娘',
+                nickname: '母夜叉',
+                faceColor: '青面',
+                feature: '爽利泼辣，敢爱敢恨；青面晕染、眉眼凌厉，线条粗狂，自带气场。',
+                meaning: '惩恶扬善、坦荡洒脱，象征不卑不亢的侠女气。'
+            },
+            {
+                title: '神行太保 · 戴宗',
+                tag: '黄面 · 机敏迅捷',
+                desc: '机敏迅捷，行动力强；黄面为主、眉眼细长，线条流畅，扮相轻便。寓意：顺遂通达、事半功倍，借其迅捷之气祈愿诸事。',
+                role: '斥候',
+                matchRate: '92%',
+                imagePrompt: 'Chinese Yingge dance opera face mask yellow color, Dai Zong the magic runner, yellow face with slender eyes, elaborate headdress with red pom-poms and blue dragon patterns, long black beard, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '戴宗',
+                nickname: '神行太保',
+                faceColor: '黄面',
+                feature: '机敏迅捷，行动力强；黄面为主、眉眼细长，线条流畅，扮相轻便。',
+                meaning: '顺遂通达、事半功倍，借其迅捷之气祈愿诸事。'
+            },
+            {
+                title: '美髯公 · 朱仝',
+                tag: '绿面 · 仗义疏财',
+                desc: '仗义疏财，宽厚待人；绿面打底、眉清目秀，搭配美髯造型，线条舒展。寓意：待人宽厚、福气绵长，象征仗义向善、邻里和睦。',
+                role: '义士',
+                matchRate: '90%',
+                imagePrompt: 'Chinese Yingge dance opera face mask green color, Zhu Tong the beautiful beard, green face with black and white opera patterns, long flowing red beard, golden headband with triangular ornament, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '朱仝',
+                nickname: '美髯公',
+                faceColor: '绿面',
+                feature: '仗义疏财，宽厚待人；绿面打底、眉清目秀，搭配美髯造型，线条舒展。',
+                meaning: '待人宽厚、福气绵长，象征仗义向善、邻里和睦。'
+            },
+            {
+                title: '石将军 · 石勇',
+                tag: '赭面 · 耿直憨厚',
+                desc: '耿直憨厚，勇猛有力；赭色为主、眉眼厚重，线条朴实，站位居中，动作沉稳。寓意：守家护院、忠信守诺，象征踏实可靠的侠义之风。',
+                role: '猛将',
+                matchRate: '88%',
+                imagePrompt: 'Chinese Yingge dance opera face mask ochre red color, Shi Yong the stone general, ochre red face with black and white opera patterns, long red beard, ornate golden headdress with red pom-poms and bird motifs, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '石勇',
+                nickname: '石将军',
+                faceColor: '赭面',
+                feature: '耿直憨厚，勇猛有力；赭色为主、眉眼厚重，线条朴实，站位居中，动作沉稳。',
+                meaning: '守家护院、忠信守诺，象征踏实可靠的侠义之风。'
+            },
+            {
+                title: '母大虫 · 顾大嫂',
+                tag: '粉面 · 泼辣果敢',
+                desc: '泼辣果敢，巾帼不让须眉；粉面打底、眉形利落，线条柔和却有力量，扮相干练。寓意：巾帼护佑、刚柔并济，象征坚韧果敢的女性力量。',
+                role: '女将',
+                matchRate: '93%',
+                imagePrompt: 'Chinese Yingge dance opera face mask pink color, female warrior Gu Dasao, pink face with elegant black eyes, pink headdress with feather ornament and blue butterfly motif, pearl decorations, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '顾大嫂',
+                nickname: '母大虫',
+                faceColor: '粉面',
+                feature: '泼辣果敢，巾帼不让须眉；粉面打底、眉形利落，线条柔和却有力量，扮相干练。',
+                meaning: '巾帼护佑、刚柔并济，象征坚韧果敢的女性力量。'
+            },
+            {
+                title: '及时雨 · 宋江',
+                tag: '红面 · 忠勇稳重',
+                desc: '忠勇稳重，队伍领袖；红脸红须、浓眉大眼，线条端正大气，常为司鼓坐镇。寓意：守护安宁、凝聚人心，象征忠义双全的精神内核。',
+                role: '统帅',
+                matchRate: '97%',
+                imagePrompt: 'Chinese Yingge dance opera face mask red color, Song Jiang the timely rain, red face with black and white opera patterns, long red beard, elaborate golden headdress with black pom-poms and sun motif, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '宋江',
+                nickname: '及时雨',
+                faceColor: '红面',
+                feature: '忠勇稳重，队伍领袖；红脸红须、浓眉大眼，线条端正大气，常为司鼓坐镇。',
+                meaning: '守护安宁、凝聚人心，象征忠义双全的精神内核。'
+            },
+            {
+                title: '行者 · 武松',
+                tag: '丹红面 · 勇武刚烈',
+                desc: '勇武刚烈，快意恩仇；丹红打底、眉眼锐利，线条利落不拖沓，扮相常带行者头陀巾，动作干净迅猛。寓意：惩恶扬善、勇往直前，象征无畏无惧的好汉气。',
+                role: '先锋',
+                matchRate: '94%',
+                imagePrompt: 'Chinese Yingge dance opera face mask red color, Wu Song the pilgrim, red dan face with sharp eyes, golden headband with crescent moon ornament and red pom-pom, side hair locks, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '武松',
+                nickname: '行者',
+                faceColor: '丹红面',
+                feature: '勇武刚烈，快意恩仇；丹红打底、眉眼锐利，线条利落不拖沓，扮相常带行者头陀巾，动作干净迅猛。',
+                meaning: '惩恶扬善、勇往直前，象征无畏无惧的好汉气。'
+            },
+            {
+                title: '霹雳火 · 秦明',
+                tag: '红面 · 骁勇善战',
+                desc: '性情急躁，骁勇善战；红面打底、眉形上扬，线条粗劲，常为头槌辅助，动作迅猛。寓意：奋勇向前、威慑邪祟，象征果敢无畏的武将气魄。',
+                role: '猛将',
+                matchRate: '91%',
+                imagePrompt: 'Chinese Yingge dance opera face mask red color, Qin Ming the thunder fire, red face with black blue and white opera flame patterns, long black beard, elaborate golden headdress with red top pom-pom and black side pom-poms, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '秦明',
+                nickname: '霹雳火',
+                faceColor: '红面',
+                feature: '性情急躁，骁勇善战；红面打底、眉形上扬，线条粗劲，常为头槌辅助，动作迅猛。',
+                meaning: '奋勇向前、威慑邪祟，象征果敢无畏的武将气魄。'
+            },
+            {
+                title: '大刀 · 关胜',
+                tag: '红面 · 忠勇稳重',
+                desc: '忠勇稳重，领舞领军担当；红脸红须、浓眉大眼，线条端正大气，常为头二槌领军。寓意：守护安宁、凝聚人心，象征忠义双全的精神内核。',
+                role: '统领',
+                matchRate: '96%',
+                imagePrompt: 'Chinese Yingge dance opera face mask red color, Guan Sheng the great blade, red face with black and white opera patterns and yin-yang forehead design, long red beard, elaborate golden headdress with red pom-poms and dragon motifs, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '关胜',
+                nickname: '大刀',
+                faceColor: '红面',
+                feature: '忠勇稳重，领舞领军担当；红脸红须、浓眉大眼，线条端正大气，常为头二槌领军。',
+                meaning: '守护安宁、凝聚人心，象征忠义双全的精神内核。'
+            },
+            {
+                title: '花和尚 · 鲁智深',
+                tag: '黑白花面 · 豪爽禅意',
+                desc: '豪爽带禅意，脸谱黑白相间、眉粗鼻阔，常配僧帽。寓意：象征仗义向善、普度向善。',
+                role: '义僧',
+                matchRate: '89%',
+                imagePrompt: 'Chinese Yingge dance opera face mask black and white, Lu Zhishen the flower monk, black and white face with red monk hat, thick eyebrows and big nose, long black beard, red hat with swirling patterns and jewel, traditional Chinese opera style, detailed patterns, rice paper texture background',
+                character: '鲁智深',
+                nickname: '花和尚',
+                faceColor: '黑白花面',
+                feature: '豪爽带禅意，脸谱黑白相间、眉粗鼻阔，常配僧帽。',
+                meaning: '象征仗义向善、普度向善。'
+            }
+        ];
+
+        function getRandomFaces(count = 3) {
+            const shuffled = [...faceDataFull].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, count);
+        }
+
+        let currentMatchedFaces = [];
+
+        function onFileSelected(input) {
+            if (input.files && input.files[0]) {
+                uploadedFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImg = document.getElementById('preview-image');
+                    const placeholder = document.getElementById('upload-placeholder');
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+
+                    const btn = document.getElementById('btn-to-step2');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                };
+                reader.readAsDataURL(uploadedFile);
+            }
+        }
+
+        function updateStepIndicator(step) {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`step${i}-dot`);
+                const label = dot.nextElementSibling;
+                if (i <= step) {
+                    dot.classList.remove('bg-meihua-accent/30', 'text-meihua-muted');
+                    dot.classList.add('bg-meihua-dark', 'text-white');
+                    label.classList.remove('text-meihua-muted');
+                    label.classList.add('text-meihua-dark');
+                } else {
+                    dot.classList.add('bg-meihua-accent/30', 'text-meihua-muted');
+                    dot.classList.remove('bg-meihua-dark', 'text-white');
+                    label.classList.add('text-meihua-muted');
+                    label.classList.remove('text-meihua-dark');
+                }
+            }
+        }
+
+        function showStep(stepNum) {
+            document.querySelectorAll('.aigc-step').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`aigc-step${stepNum}`).classList.remove('hidden');
+            updateStepIndicator(stepNum);
+            aigcCurrentStep = stepNum;
+        }
+
+        function goToStep1() {
+            showStep(1);
+        }
+
+        function goToStep2() {
+            showLoading("AI正在分析您的五官特征...");
+            setTimeout(() => {
+                currentMatchedFaces = getRandomFaces(3);
+                selectedFaceIndex = 0;
+                renderMatchedFaces();
+                hideLoading();
+                showStep(2);
+            }, 1500);
+        }
+
+        function renderMatchedFaces() {
+            const container = document.getElementById('matched-faces-container');
+            container.innerHTML = '';
+
+            const count = currentMatchedFaces.length;
+            document.getElementById('matched-count-text').textContent = `AI为您匹配了${count}款最适合的英歌脸谱`;
+
+            if (count <= 3) {
+                container.className = 'grid grid-cols-3 gap-3';
+            } else if (count === 4) {
+                container.className = 'grid grid-cols-2 gap-3';
+            } else {
+                container.className = 'grid grid-cols-3 gap-3';
+            }
+
+            currentMatchedFaces.forEach((face, index) => {
+                const card = document.createElement('div');
+                card.className = `face-card glass-card rounded-xl p-2 cursor-pointer text-center ${index === selectedFaceIndex ? 'ring-2 ring-meihua-accent' : ''}`;
+                card.onclick = () => selectFace(index);
+
+                const imgUrl = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(face.imagePrompt)}&image_size=square`;
+
+                card.innerHTML = `
+                    <div class="w-full aspect-square rounded-lg overflow-hidden mb-2 bg-meihua-accent/10">
+                        <img src="${imgUrl}" alt="${face.title}" class="w-full h-full object-cover">
+                    </div>
+                    <p class="text-meihua-dark text-xs font-medium">${face.nickname}</p>
+                    <p class="text-meihua-muted text-[10px]">${face.character}</p>
+                    <p class="text-meihua-accent text-[10px] mt-1">匹配 ${face.matchRate}</p>
+                `;
+
+                container.appendChild(card);
+            });
+
+            updateSelectedFaceInfo();
+        }
+
+        function selectFace(index) {
+            selectedFaceIndex = index;
+            renderMatchedFaces();
+        }
+
+        function updateSelectedFaceInfo() {
+            const face = currentMatchedFaces[selectedFaceIndex];
+            document.getElementById('selected-face-name').textContent = `${face.nickname} · ${face.character}`;
+            document.getElementById('selected-face-desc').innerHTML = `
+                <span class="text-meihua-accent font-medium">【${face.faceColor}】</span>
+                ${face.feature}<br>
+                <span class="text-meihua-accent font-medium">寓意：</span>
+                ${face.meaning}
+            `;
+        }
+
+        function goToStep3() {
+            showLoading("AI正在生成您的英歌卡通形象...");
+            setTimeout(() => {
+                const face = currentMatchedFaces[selectedFaceIndex];
+                const cartoonPrompt = `cute cartoon chibi character of ${face.character} with ${face.nickname} Yingge dance opera mask, ${face.faceColor} face, traditional Chinese green and gold costume, dynamic dance pose, clouds background, digital art, vibrant colors, rice paper texture`;
+                const imgUrl = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(cartoonPrompt)}&image_size=portrait_4_3`;
+
+                document.getElementById('cartoon-character-image').src = imgUrl;
+                document.getElementById('cartoon-character-name').textContent = `${face.nickname} · 卡通形象`;
+                document.getElementById('cartoon-match-rate').textContent = face.matchRate;
+                document.getElementById('cartoon-role').textContent = face.role;
+
+                hideLoading();
+                showStep(3);
+            }, 2000);
+        }
+
+        function goToStep4() {
+            const face = currentMatchedFaces[selectedFaceIndex];
+            const productPrompt = `premium green plum wine bottle with custom ${face.nickname} ${face.character} Yingge opera mask label, ${face.faceColor} face design, elegant green glass bottle, gold cap, Chinese style packaging, product photography, soft lighting, luxury feel, rice paper texture`;
+            const productImgUrl = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(productPrompt)}&image_size=landscape_16_9`;
+
+            document.getElementById('order-product-image').src = productImgUrl;
+            document.getElementById('order-face-style').textContent = `${face.nickname} · ${face.character}`;
+
+            showStep(4);
+        }
+
+        function placeOrder() {
+            showLoading("正在提交订单...");
+            setTimeout(() => {
+                const orderNum = 'SMJ' + Date.now().toString().slice(-10);
+                document.getElementById('order-number').textContent = orderNum;
+                hideLoading();
+
+                document.querySelectorAll('.aigc-step').forEach(el => el.classList.add('hidden'));
+                document.getElementById('aigc-success').classList.remove('hidden');
+                updateStepIndicator(4);
+            }, 1500);
+        }
+
+        function resetAIGC() {
+            selectedFaceIndex = 0;
+            uploadedFile = null;
+            aigcCurrentStep = 1;
+
+            const previewImg = document.getElementById('preview-image');
+            const placeholder = document.getElementById('upload-placeholder');
+            const btn = document.getElementById('btn-to-step2');
+
+            previewImg.classList.add('hidden');
+            previewImg.src = '';
+            placeholder.classList.remove('hidden');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            document.getElementById('real-file-input').value = '';
+
+            showStep(1);
+        }
+
+        function renderMaskSelection(masks) {
+            const container = document.getElementById('face-cards-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            masks.forEach((mask, index) => {
+                const card = document.createElement('div');
+                card.className = 'face-card glass-card rounded-xl p-3 cursor-pointer text-center';
+                card.onclick = () => openFaceModal(index);
+
+                const iconHtml = mask.icon || faceData[index % faceData.length].icon;
+                const title = mask.name || faceData[index % faceData.length].title;
+                const tag = mask.tag || faceData[index % faceData.length].tag.split(' · ')[0];
+
+                card.innerHTML = `
+                    <div class="w-14 h-14 mx-auto mb-2 rounded-full bg-gradient-to-br from-meihua-accent to-meihua-dark/30 flex items-center justify-center">
+                        ${iconHtml}
+                    </div>
+                    <p class="text-meihua-dark text-xs font-medium">${title}</p>
+                    <p class="text-meihua-muted text-[10px]">${tag}</p>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function toggleBackpack() {
+            const panel = document.getElementById('backpack-panel');
+            panel.classList.toggle('hidden');
+            document.getElementById('reward-panel').classList.add('hidden');
+            document.getElementById('energy-panel').classList.add('hidden');
+            document.getElementById('gift-panel').classList.add('hidden');
+            document.getElementById('gift2-panel').classList.add('hidden');
+        }
+
+        function toggleReward() {
+            const panel = document.getElementById('reward-panel');
+            panel.classList.toggle('hidden');
+            document.getElementById('backpack-panel').classList.add('hidden');
+            document.getElementById('energy-panel').classList.add('hidden');
+            document.getElementById('gift-panel').classList.add('hidden');
+            document.getElementById('gift2-panel').classList.add('hidden');
+        }
+
+        function toggleEnergyPanel() {
+            const panel = document.getElementById('energy-panel');
+            panel.classList.toggle('hidden');
+            document.getElementById('backpack-panel').classList.add('hidden');
+            document.getElementById('reward-panel').classList.add('hidden');
+            document.getElementById('gift-panel').classList.add('hidden');
+            document.getElementById('gift2-panel').classList.add('hidden');
+        }
+
+        function toggleGiftPanel() {
+            const panel = document.getElementById('gift-panel');
+            panel.classList.toggle('hidden');
+            document.getElementById('backpack-panel').classList.add('hidden');
+            document.getElementById('reward-panel').classList.add('hidden');
+            document.getElementById('energy-panel').classList.add('hidden');
+            document.getElementById('gift2-panel').classList.add('hidden');
+        }
+
+        function toggleGift2Panel() {
+            const panel = document.getElementById('gift2-panel');
+            panel.classList.toggle('hidden');
+            document.getElementById('backpack-panel').classList.add('hidden');
+            document.getElementById('reward-panel').classList.add('hidden');
+            document.getElementById('energy-panel').classList.add('hidden');
+            document.getElementById('gift-panel').classList.add('hidden');
+        }
+
+        function handleAction(action) {
+            const messages = {
+                'plant': '🌱 种植成功！青梅树正在茁壮成长~',
+                'water': '💧 浇水成功！小树苗喝饱水啦~',
+                'harvest': '🍒 收获成功！获得新鲜青梅果实~'
+            };
+            
+            if (messages[action]) {
+                console.log(messages[action]);
+            }
+        }
+
+        const viewParentMap = {
+            'origin': 'dashboard',
+            'craft': 'dashboard',
+            'aigc': 'dashboard',
+            'product': 'dashboard',
+            'park-detail': 'origin',
+            'trace-game': 'craft'
+        };
+
+        function goBack() {
+            const parentView = viewParentMap[currentView] || 'dashboard';
+            switchView(parentView);
+        }
+
+        function switchView(viewName) {
+            const currentEl = document.getElementById(`view-${currentView}`);
+            const nextEl = document.getElementById(`view-${viewName}`);
+            const backButton = document.getElementById('back-button');
+
+            if (!nextEl || currentView === viewName) return;
+
+            currentEl.classList.remove('active');
+            currentEl.style.display = 'none';
+            
+            nextEl.style.display = 'block';
+            nextEl.classList.add('active');
+            nextEl.classList.add('view-enter');
+            
+            currentView = viewName;
+
+            if (viewName === 'dashboard') {
+                backButton.classList.remove('active');
+            } else {
+                backButton.classList.add('active');
+            }
+
+            if (viewName === 'aigc') {
+                resetAIGC();
+            }
+
+            nextEl.scrollTop = 0;
+
+            setTimeout(() => {
+                nextEl.classList.remove('view-enter');
+            }, 500);
+        }
+
+        function activateTimeline(index) {
+            const cards = document.querySelectorAll('.timeline-card');
+            cards.forEach((card, i) => {
+                if (i === index) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+        }
+
+        function openFaceModal(index) {
+            const data = faceData[index];
+            document.getElementById('modal-face-icon').innerHTML = data.icon;
+            document.getElementById('modal-face-title').textContent = data.title;
+            document.getElementById('modal-face-tag').textContent = data.tag;
+            document.getElementById('modal-face-story').textContent = data.story;
+            document.getElementById('modal-face-lore').textContent = data.lore;
+            document.getElementById('modal-face-culture').textContent = data.culture;
+            
+            document.getElementById('face-modal-overlay').classList.add('active');
+            document.getElementById('face-modal-content').classList.add('active');
+        }
+
+        function closeFaceModal() {
+            document.getElementById('face-modal-overlay').classList.remove('active');
+            document.getElementById('face-modal-content').classList.remove('active');
+        }
+
+        function startAICoCreate() {
+            closeFaceModal();
+            setTimeout(() => {
+                document.getElementById('loading-overlay').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').classList.remove('active');
+                    document.getElementById('result-overlay').classList.add('active');
+                    document.querySelector('#result-overlay .modal-content').classList.add('active');
+                }, 2500);
+            }, 300);
+        }
+
+        function closeResultModal() {
+            document.getElementById('result-overlay').classList.remove('active');
+            document.querySelector('#result-overlay .modal-content').classList.remove('active');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            gsap.to('#view-dashboard .animate-float', {
+                y: -20,
+                ease: 'power1.inOut',
+                duration: 6,
+                repeat: -1,
+                yoyo: true
+            });
+
+            gsap.from('#view-dashboard h1', {
+                opacity: 0,
+                y: 30,
+                duration: 1,
+                delay: 0.5,
+                ease: 'power3.out'
+            });
+
+            gsap.from('#view-dashboard .dashboard-card', {
+                opacity: 0,
+                y: 30,
+                duration: 0.6,
+                delay: 0.8,
+                stagger: 0.15,
+                ease: 'power3.out'
+            });
+        });
+
+        window.switchView = switchView;
+        window.goBack = goBack;
+        window.onFileSelected = onFileSelected;
+        window.goToStep1 = goToStep1;
+        window.goToStep2 = goToStep2;
+        window.goToStep3 = goToStep3;
+        window.goToStep4 = goToStep4;
+        window.placeOrder = placeOrder;
+        window.resetAIGC = resetAIGC;
+        window.selectFace = selectFace;
+        window.activateTimeline = activateTimeline;
+        window.openFaceModal = openFaceModal;
+        window.closeFaceModal = closeFaceModal;
+        window.startAICoCreate = startAICoCreate;
+        window.handlePhotoUpload = handlePhotoUpload;
+        window.handleConfirmCustomization = handleConfirmCustomization;
+        window.renderMaskSelection = renderMaskSelection;
+        window.showLoading = showLoading;
+        window.hideLoading = hideLoading;
+        window.toggleBackpack = toggleBackpack;
+        window.toggleReward = toggleReward;
+        window.toggleEnergyPanel = toggleEnergyPanel;
+        window.toggleGiftPanel = toggleGiftPanel;
+        window.toggleGift2Panel = toggleGift2Panel;
+        window.handleAction = handleAction;
+    </script>
+</body>
+</html>
